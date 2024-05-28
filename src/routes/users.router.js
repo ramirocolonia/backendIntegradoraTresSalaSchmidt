@@ -5,7 +5,10 @@ import UserController from "../controllers/user.controller.js";
 const usersRouter = Router();
 const {
   registerUser,
-  login
+  login,
+  passRecoveryMail,
+  resetPassToken,
+  updatePass
 } = new UserController();
 
 usersRouter.post("/register", registerUser);
@@ -13,5 +16,11 @@ usersRouter.post("/login", login);
 usersRouter.get("/api/sessions/current", passportCall("jwt", ["USER"]), async (req, res)=>{
   res.send(req.user);
 });
+
+usersRouter.post("/resetPass", passRecoveryMail);
+
+usersRouter.get("/resetPass/:token", resetPassToken);
+
+usersRouter.post("/newPass", updatePass);
 
 export default usersRouter;

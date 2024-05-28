@@ -100,7 +100,7 @@ class ProductController {
       const newValues = req.body;
       if (Object.values(newValues).every((value) => String(value).trim() !== "" && value !== undefined)){
         if (await productService.updateProduct(req.params.pid, newValues)){
-          res.send({ status: "success", payload: `Producto id ${req.params.pid} eliminado correctamente` });
+          res.send({ status: "success", payload: `Producto id ${req.params.pid} actualizado correctamente` });
         } else {
           const err = new CustomError(
             "error al actualizar",

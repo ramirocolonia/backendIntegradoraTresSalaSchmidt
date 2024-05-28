@@ -19,4 +19,9 @@ export default class UserRepository{
     const result = await this.dao.findOneUser(uEmail);
     return result;
   }
+
+  updateUser = async(uId, newValues) =>{
+    const result = await this.dao.updateUser(uId, newValues);
+    return result; 
+  }
 }

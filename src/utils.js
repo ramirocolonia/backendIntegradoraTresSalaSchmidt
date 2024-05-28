@@ -25,8 +25,7 @@ export const passportCall = (strategy, policies) =>{
         if(!policies.includes(rol)){
           return res.status(403).send({error: "error", message: "Permisos insuficientes" });
         }
-        req.user = user;
-        
+        req.user = user;  
       }
       next();
     })(req, res, next);

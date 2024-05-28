@@ -8,5 +8,12 @@ export default {
   admin: process.env.ADMIN_NAME,
   passAdmin: process.env.ADMIN_PASSWORD,
   tokenPass: process.env.TOKEN_PASSWORD,
-  environment: process.env.ENVIRONMENT
+  environment: process.env.ENVIRONMENT,
+
+  mailing:{
+    SERVICE: process.env.MAILING_SERVICE,
+    HOST: process.env.MAILING_HOST,
+    USER: process.env.MAILING_USER,
+    PASSWORD: process.env.MAILING_PASSWORD
+  }
 }

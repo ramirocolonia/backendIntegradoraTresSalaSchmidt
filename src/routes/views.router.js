@@ -20,4 +20,8 @@ viewsRouter.get("/", (req, res)=>{
   res.redirect("/login")
 });
 
+viewsRouter.get("/resetPass", (req,res)=>{
+  res.render("resetPass", {});
+});
+
 export default viewsRouter;

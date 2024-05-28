@@ -23,6 +23,10 @@ class UserMongo{
     return result;
   }
   
+  async updateUser(uId, newValues) {
+    const result = await userModel.updateOne({ _id: uId}, newValues);
+    return result; 
+  }
 }
 
 export default UserMongo;

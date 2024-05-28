@@ -7,16 +7,18 @@ import UserDTO from "../dao/DTOs/user.dto.js";
 import CustomError from "../services/errors/CustomError.js";
 import { generateUserErrorInfo, mongoError, unfindField, uniqueField } from "../services/errors/info.js";
 import EErrors from "../services/errors/enums.js";
+import MailingService from "../services/mailing.js";
 
 class UserController {
 
   registerUser = async (req, res, next) => {
     try {
-      const { first_name, last_name, email, age, password } = req.body;
+      const { first_name, last_name, rol, email, age, password } = req.body;
       if (!(await userService.existEmail(email))) {
         let newUser = {
           first_name,
           last_name,
+          rol,
           email,
           age,
           password: password
@@ -72,7 +74,6 @@ class UserController {
       const token = jwt.sign({usrDTO}, config.tokenPass, {expiresIn: "24h"});
       res.cookie("tokenUsrCookie", token, {maxAge: 60 * 60 * 1000 * 24, httpOnly: true});
         
-        // se envia user completo en lugar de dto para tener toda la info para testear 
       res.send({ status: "success", payload: usrDTO, token: token });
     } else {
       const user = await userService.findOneUser(email);
@@ -98,5 +99,58 @@ class UserController {
       }
     }
   };
+
+  passRecoveryMail = async (req, res) =>{
+    const {email} = req.body;
+    const user = await userService.findOneUser(email);
+    if(user){
+      const email = user.email;
+      const token = jwt.sign({email}, config.tokenPass, {expiresIn: "1h"});
+      const mailer = new MailingService();
+      const mailOpts = {
+        from: "Ecommerce",
+        to: user.email,
+        subject: "Recuperación de contraseña",
+        html: `
+              <p>Click en el siguiente enlace para recuperar contraseña: </p>
+              <a href = "http://localhost:8080/resetPass/${token}">Recuperar Contraseña</a>`
+      };
+      await mailer.sendSimpleMail(mailOpts);
+      res.status(200).send({status: "success", message: "Email enviado"});
+    }
+  }  
+
+  resetPassToken = async (req, res) =>{
+    const token = req.params.token;
+    jwt.verify(token, config.tokenPass, (error, decoded) =>{
+      if(error) return res.redirect("/resetPass")
+      else{
+        res.cookie("cookieUsr", decoded.email, { httpOnly: true });
+        res.render("newPass", {user:decoded.email});
+      } 
+    });
+  }
+
+  updatePass = async (req, res) =>{
+    const email = req.cookies.cookieUsr;
+    const user = await userService.findOneUser(email);
+    const newPassword = req.body.pass;
+    if(!isValidPassword(user, newPassword)){
+      user.password = createHash(newPassword);
+      if(await userService.updateUser(user._id, user)){
+        res.send({ 
+          status: "success", 
+          payload:  `Cambio de contraseña correcto para el usuario 
+                    ${user}` });
+      }else{
+        res.send({ status: "error", message: "Error en al actualizar en BDD"});
+      }
+    }else{
+      res.send({ status: "error", message: "La contraseña ingresada es igual a la actual"});
+    }
+
+
+  }
+
 }
 export default UserController;

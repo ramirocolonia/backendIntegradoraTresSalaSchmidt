@@ -1,5 +1,6 @@
 import { Router } from "express";
 import ProductController from "../controllers/product.controller.js";
+import { passportCall } from "../utils.js";
 
 const productsRouter = Router();
 const {
@@ -12,7 +13,8 @@ const {
 
 productsRouter.get("/", loadProducts);
 productsRouter.get("/:pid", loadProduct);
-productsRouter.post("/", newProduct);
+
+productsRouter.post("/", passportCall("jwt", ["PREMIUM", "ADMIN"]), newProduct);
 productsRouter.put("/:pid", updateProduct);
 productsRouter.delete("/:pid", deleteProduct);
 
