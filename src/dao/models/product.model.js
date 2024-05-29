@@ -39,13 +39,7 @@ const productSchema = new mongoose.Schema({
     default:[]
   },
   owner: {
-    type: {
-      userEmail:{
-        type: String,
-        field: "email",
-        ref: "users"
-      }
-    },
+    type: String,
     default: config.admin
   }
 });

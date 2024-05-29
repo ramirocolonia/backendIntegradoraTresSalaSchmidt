@@ -1,7 +1,13 @@
 import { productService } from "../repositories/index.js";
 import CustomError from "../services/errors/CustomError.js";
 import EErrors from "../services/errors/enums.js";
-import { generateProductErrorInfo, mongoError, unfindField, uniqueField } from "../services/errors/info.js";
+import { 
+  generateOwnerErrorInfo, 
+  generateProductErrorInfo, 
+  mongoError, 
+  unfindField, 
+  uniqueField 
+} from "../services/errors/info.js";
 
 class ProductController {
 
@@ -47,6 +53,7 @@ class ProductController {
   newProduct = async (req, res, next) => {
     try{
       const { title, description, code, price, stock, category } = req.body;
+      const owner = req.user.usrDTO.email;
       const thumbs = req.body.thumbnails || [];
       if (!(await productService.existCode(code))) {
         let newProduct = {
@@ -56,10 +63,11 @@ class ProductController {
           price,
           status: true,
           stock,
-          category,
+          category
         };
         if (Object.values(newProduct).every((value) => String(value).trim() !== "" && value !== undefined)){
           newProduct.thumbnails = thumbs;
+          newProduct.owner = owner;
           const result = await productService.createProduct(newProduct);
           if (result) {
             res.send({ status: "success", payload: result });
@@ -98,17 +106,28 @@ class ProductController {
   updateProduct = async (req, res, next) => {
     try{
       const newValues = req.body;
+      const usr = req.user.usrDTO; 
       if (Object.values(newValues).every((value) => String(value).trim() !== "" && value !== undefined)){
-        if (await productService.updateProduct(req.params.pid, newValues)){
-          res.send({ status: "success", payload: `Producto id ${req.params.pid} actualizado correctamente` });
-        } else {
+        if(newValues.owner === usr.email || usr.rol === "ADMIN"){
+          if (await productService.updateProduct(req.params.pid, newValues)){
+            res.send({ status: "success", payload: `Producto id ${req.params.pid} actualizado correctamente` });
+          } else {
+            const err = new CustomError(
+              "error al actualizar",
+              mongoError(),
+              "error al intentar actualizar el producto en BDD",
+              EErrors.DATABASE_ERROR
+            );
+            return next(err);
+          }
+        }else{
           const err = new CustomError(
-            "error al actualizar",
-            mongoError(),
-            "error al intentar actualizar el producto en BDD",
-            EErrors.DATABASE_ERROR
+            "faltan permisos",
+            generateOwnerErrorInfo(newValues.owner, usr.email),
+            "el usuario no es administrador o no coincide con el usuario que registró el producto",
+            EErrors.INVALID_TYPES_ERROR
           );
-          return next(err);
+          return next(err);  
         }
       } else {
         const err = new CustomError(
@@ -127,17 +146,28 @@ class ProductController {
   deleteProduct = async (req, res, next) => {
     try{
       let product = await productService.findOneProduct(req.params.pid);
+      const usr = req.user.usrDTO;
       if (product) {
-        if (await productService.deleteProduct(product)) {
-          res.send({ status: "success", payload: `Producto id ${req.params.pid} eliminado correctamente` });
-        } else {
+        if(newValues.owner === usr.email || usr.rol === "ADMIN"){
+          if (await productService.deleteProduct(product)) {
+            res.send({ status: "success", payload: `Producto id ${req.params.pid} eliminado correctamente` });
+          } else {
+            const err = new CustomError(
+              "error al eliminar",
+              mongoError(),
+              "error al intentar eliminar el producto en BDD",
+              EErrors.DATABASE_ERROR
+            );
+            return next(err);
+          }
+        }else{
           const err = new CustomError(
-            "error al eliminar",
-            mongoError(),
-            "error al intentar eliminar el producto en BDD",
-            EErrors.DATABASE_ERROR
+            "faltan permisos",
+            generateOwnerErrorInfo(newValues.owner, usr.email),
+            "el usuario no es administrador o no coincide con el usuario que registró el producto",
+            EErrors.INVALID_TYPES_ERROR
           );
-          return next(err);
+          return next(err);  
         }
       }else {
         const err = new CustomError(

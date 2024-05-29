@@ -13,9 +13,8 @@ const {
 
 productsRouter.get("/", loadProducts);
 productsRouter.get("/:pid", loadProduct);
-
-productsRouter.post("/", passportCall("jwt", ["PREMIUM", "ADMIN"]), newProduct);
-productsRouter.put("/:pid", updateProduct);
-productsRouter.delete("/:pid", deleteProduct);
+productsRouter.post("/", passportCall("jwt", ["ADMIN", "PREMIUM"]), newProduct);
+productsRouter.put("/:pid", passportCall("jwt", ["ADMIN", "PREMIUM"]), updateProduct);
+productsRouter.delete("/:pid", passportCall("jwt", ["ADMIN", "PREMIUM"]), deleteProduct);
 
 export default productsRouter;

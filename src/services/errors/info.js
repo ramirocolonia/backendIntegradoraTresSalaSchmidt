@@ -36,6 +36,14 @@ export const generateProductErrorInfo = (product) =>{
           `;
 }
 
+export const generateOwnerErrorInfo = (owner, user) =>{
+  return  `El usuario logueado no es administrador o no es el dueño del producto que desea eliminar/modificar.
+          Valores:
+          * dueño del producto: ${owner}
+          * usuario logueado: ${user}
+          `;
+}
+
 // ERRORES DE CHAT
 export const generateMessageErrorInfo = (message) =>{
   return  `Una o más propiedades estaban incompletas o no eran el formato.
