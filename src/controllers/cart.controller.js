@@ -38,20 +38,23 @@ class CartController {
     try {
       const cart = await cartService.findOneCart(req.params.cid);
       const product = await productService.findOneProduct(req.params.pid);
+      const usr = req.user.usrDTO;
       if (cart) {
         if (product) {
-          let addQuantity = cart.products.find(
-            (p) => p.product._id == req.params.pid
-          );
-          if (addQuantity) {
-            addQuantity.quantity += 1;
-          } else {
-            cart.products.push({ product: product.id, quantity: 1 });
-          }
-          if (await cartService.updateCart(cart)) {
-            res.send({ status: "success", payload: product });
-          } else {
-            res.send({ status: "error", message: "Error al guardar producto" });
+          if(product.owner !== usr.email){
+            let addQuantity = cart.products.find((p) => p.product._id == req.params.pid);
+            if (addQuantity) {
+              addQuantity.quantity += 1;
+            } else {
+              cart.products.push({ product: product.id, quantity: 1 });
+            }
+            if (await cartService.updateCart(cart)) {
+              res.send({ status: "success", payload: product });
+            } else {
+              res.send({ status: "error", message: "Error al guardar producto" });
+            }
+          }else{
+            res.send({ status: "error", message: "El producto agregado al carrito pertenece al usuario" });  
           }
         } else {
           res.send({ status: "error", message: "Producto inexistente" });

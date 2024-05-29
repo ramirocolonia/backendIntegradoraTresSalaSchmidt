@@ -8,7 +8,8 @@ const {
   login,
   passRecoveryMail,
   resetPassToken,
-  updatePass
+  updatePass,
+  updateUserRol
 } = new UserController();
 
 usersRouter.post("/register", registerUser);
@@ -22,5 +23,7 @@ usersRouter.post("/resetPass", passRecoveryMail);
 usersRouter.get("/resetPass/:token", resetPassToken);
 
 usersRouter.post("/newPass", updatePass);
+
+usersRouter.post("/api/users/premium/:uid", updateUserRol);
 
 export default usersRouter;

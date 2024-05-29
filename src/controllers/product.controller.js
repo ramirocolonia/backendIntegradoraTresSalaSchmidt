@@ -148,7 +148,7 @@ class ProductController {
       let product = await productService.findOneProduct(req.params.pid);
       const usr = req.user.usrDTO;
       if (product) {
-        if(newValues.owner === usr.email || usr.rol === "ADMIN"){
+        if(product.owner === usr.email || usr.rol === "ADMIN"){
           if (await productService.deleteProduct(product)) {
             res.send({ status: "success", payload: `Producto id ${req.params.pid} eliminado correctamente` });
           } else {
@@ -163,7 +163,7 @@ class ProductController {
         }else{
           const err = new CustomError(
             "faltan permisos",
-            generateOwnerErrorInfo(newValues.owner, usr.email),
+            generateOwnerErrorInfo(product.owner, usr.email),
             "el usuario no es administrador o no coincide con el usuario que registró el producto",
             EErrors.INVALID_TYPES_ERROR
           );

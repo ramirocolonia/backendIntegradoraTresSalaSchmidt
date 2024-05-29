@@ -138,6 +138,7 @@ class UserController {
     if(!isValidPassword(user, newPassword)){
       user.password = createHash(newPassword);
       if(await userService.updateUser(user._id, user)){
+        res.clearCookie("cookieUsr");
         res.send({ 
           status: "success", 
           payload:  `Cambio de contraseña correcto para el usuario 
@@ -148,8 +149,25 @@ class UserController {
     }else{
       res.send({ status: "error", message: "La contraseña ingresada es igual a la actual"});
     }
+  }
 
-
+  updateUserRol = async (req, res) =>{
+    const email = req.user.usrDTO.email;
+    const user = await userService.findOneUser(email);
+    if(user.rol === "ADMIN"){
+      res.send({ status: "error", message: "Error, el usuario logueado es Administrador"});
+    }else{
+      if(user.rol === "PREMIUM"){
+        user.rol = "USER";
+      }else{
+        user.rol = "PREMIUM";
+      }
+      if(await userService.updateUser(user._id, user)){
+        res.send({status: "success", payload:  `Cambio de rol con éxito, para el usuario ${user}` });
+      }else{
+        res.send({ status: "error", message: "Error en al actualizar en BDD"});
+      }
+    }
   }
 
 }
